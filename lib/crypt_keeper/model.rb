@@ -98,6 +98,22 @@ module CryptKeeper
         end
       end
 
+
+      # Public: Decrypt a table.
+      def decrypt_table!(options = {})
+        options   = crypt_keeper_options.merge(options)
+        enc       = encryptor_klass.new(options)
+        tmp_table = Class.new(ActiveRecord::Base).tap { |c| c.table_name = self.table_name }
+
+        transaction do
+          tmp_table.find_each do |r|
+            decrypted_columns = Hash.new
+            crypt_keeper_fields.each {|f| decrypted_columns[f.to_sym] = enc.decrypt(r[f]) if r[f].present? } 
+            r.update_columns(decrypted_columns) unless decrypted_columns.empty?
+          end
+        end
+      end            
+
       private
 
       # Private: The encryptor class
