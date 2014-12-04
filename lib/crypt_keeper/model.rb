@@ -93,7 +93,7 @@ module CryptKeeper
               r.send("#{field}=", enc.encrypt(r[field])) if r[field].present?
             end
 
-            r.save!
+            r.save!(:validate => false)
           end
         end
       end
